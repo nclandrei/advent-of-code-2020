@@ -1,39 +1,48 @@
 # frozen_string_literal: true
 
-# Passport defines a North Pole passport.
-class Passport
-  def initialize(lines)
-    values = {}
+ROW_COUNT = 128
+COLUMN_COUNT = 8
 
-    lines.each do |line|
-      pairs = line.split(' ')
-      pairs.each do |pair|
-        parts = pair.split(':')
-        values[parts[0]] = parts[1]
-      end
+class Seat
+  def initialize(cipher)
+    @cipher = cipher
+  end
+
+  def row_number
+    min_row = 0
+    max_row = ROW_COUNT
+    row_cipher = @cipher[0..7]
+
+    row_cipher.chars.each do |char|
+      max_row -= (max_row - min_row) / 2 if char == 'F'
+      min_row += (max_row - min_row) / 2 if char == 'B'
     end
 
-    @values = values
+    min_row
   end
 
-  def valid?
-    true if (@values.length == 8) || (@values.length == 7 && @values['cid'].nil?)
+  def column_number
+    min_column = 0
+    max_column = COLUMN_COUNT
+    row_cipher = @cipher[7..10]
+
+    row_cipher.chars.each do |char|
+      max_column -= (max_column - min_column) / 2 if char == 'L'
+      min_column += (max_column - min_column) / 2 if char == 'R'
+    end
+
+    min_column
+  end
+
+  def seat_id
+    row_number * 8 + column_number
   end
 end
 
-passports = []
-lines = File.readlines('input.txt')
-i = 0
-while i < lines.length
-  passport_lines = []
-  while lines[i] && lines[i].length > 1 && i < lines.length
-    passport_lines.push(lines[i])
-    i += 1
-  end
-
-  passports.push(Passport.new(passport_lines))
-  i += 1
+max_seat_id = 0
+File.readlines('input.txt').each do |line|
+  seat_id = Seat.new(line).seat_id
+  max_seat_id = seat_id if max_seat_id < seat_id
 end
 
-puts "#{passports.filter(&:valid?).length} valid passports"
-
+puts "Maximum seat ID is: #{max_seat_id}"
