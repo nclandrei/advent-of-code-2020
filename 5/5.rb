@@ -1,3 +1,4 @@
+require 'pp'
 # frozen_string_literal: true
 
 ROW_COUNT = 128
@@ -40,9 +41,20 @@ class Seat
 end
 
 max_seat_id = 0
+seats = []
+
+128.times { |_i| seats.push([0, 0, 0, 0, 0, 0, 0, 0]) }
+
 File.readlines('input.txt').each do |line|
-  seat_id = Seat.new(line).seat_id
+  seat = Seat.new(line)
+  seat_id = seat.seat_id
+  row = seat.row_number
+  column = seat.column_number
+
+  seats[row][column] = seat_id
+
   max_seat_id = seat_id if max_seat_id < seat_id
 end
 
-puts "Maximum seat ID is: #{max_seat_id}"
+pp "Maximum seat ID is: #{max_seat_id}"
+pp seats.inspect
